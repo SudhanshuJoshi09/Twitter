@@ -1,26 +1,33 @@
 {% extends 'base.html' %}
 
 {% block content %}
+<!-- Title -->
 <div class="row">
     <div class="col text-center">
         <h1>Welcome to TweetMe2</h1>
     </div>
 </div>
+<!-- ends here-->
 
+<!-- This Section is the form for creating tweets-->
 <div class="row mb-3">
     <div class="col-md-4 mx-auto col-10">
         <form method="POST" action="/create-tweet" class="form" id='tweet-create-form'> 
             {% csrf_token %}
             <input type="hidden" name="next" value="/">
-            <textarea name="content" placeholder="Your Tweet" class="form-control"></textarea>
+            <textarea name="content" placeholder="Your Tweet"
+            class="form-control" required="required"></textarea>
             <button type='submit' class='btn btn-secondary'>Tweet</button>
         </form>
     </div>
 </div>
+<!-- ends Here -->
 
+<!--- Container for TweetList -->
 <div id="container" class="row">
     This gets replaced!!
 </div>
+<!-- ends Here -->
 
 <script>
 //------------------------------------------------------------------------------------------------------------
@@ -39,9 +46,11 @@
         const myFormData = new FormData(myForm)
         const url = myForm.getAttribute("action")
         const method = myForm.getAttribute("method")
+        const responseType = "json";
 
         /* Creating XMLHttpRequest() */
         const xhr = new XMLHttpRequest()
+        xhr.responseType = responseType;
         xhr.open(method, url)
         /* Ajax setting up */
         /* setting up headers for django to find this ajax request */
@@ -50,11 +59,17 @@
 
         xhr.onload = function() {
             if (xhr.status === 201) {
-                const newResponse = xhr.response;
-                const jsonResponse = JSON.parse(newResponse)
-                const newTweetElement = formatedTweet(jsonResponse);
-                console.log(newTweetElement);
+                const newJsonResponse = xhr.response;
+                const newTweetElement = formatedTweet(newJsonResponse);
+                const ogHTML = tweetContainerElement.innerHTML;
+                tweetContainerElement.innerHTML = newTweetElement + ogHTML;
+                myForm.reset()
+            } else if (xhr.status === 400) {
+                console.log(xhr.response);
             }
+        }
+        xhr.onerror = function() {
+            alert("An Error Occurred. Please try later.")
         }
         xhr.send(myFormData);
     }
@@ -91,14 +106,17 @@
 
 //------------------------------------------------------------------------------------------------------------
     // Like Button
-    function buttonClicked(likes) {
-        console.log(likes);
-    }
     function createButton(tweet) {
-        var newbutton = "<button class='btn btn-primary' onclick=buttonClicked(tweet.likes)"+
-         ">" + tweet.likes + "Likes" +"</button>";
+        var newbutton = "<button class='btn btn-primary' onclick=''" + 
+         " >" + tweet.likes + "Likes" +"</button>";
         return newbutton;
     }
+
+/*
+    function buttonClicked(tweet) {
+        console.log(tweet.likes);
+    }
+*/
 //------------------------------------------------------------------------------------------------------------
 
 </script>

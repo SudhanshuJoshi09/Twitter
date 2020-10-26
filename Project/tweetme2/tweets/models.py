@@ -10,6 +10,9 @@ class Tweet(models.Model):
     content = models.TextField()
     image = models.FileField(upload_to='images/', blank=True, null=True)
 
+    class Meta:
+        ordering = ['-id']
+
     """ For getting serialized json format of the model. """
     def serialize(self):
         return {
