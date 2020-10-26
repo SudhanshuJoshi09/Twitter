@@ -1,0 +1,67 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="row">
+    <div class="col text-center">
+        <h1>Welcome to TweetMe2</h1>
+    </div>
+</div>
+
+<div class="row mb-3">
+    <div class="col-md-4 mx-auto col-10">
+        <form method="POST" action="/create-tweet" class="form"> 
+            {% csrf_token %}
+            <input type="hidden" name="next" value="/">
+            <textarea name="content" placeholder="Your Tweet" class="form-control"></textarea>
+            <button type='submit' class='btn btn-secondary'>Tweet</button>
+        </form>
+    </div>
+</div>
+
+<div id="container" class="row">
+    This gets replaced!!
+</div>
+
+<script>
+    /* The Like button */
+    function buttonClicked(likes) {
+        console.log(likes);
+    }
+    function createButton(tweet) {
+        var newbutton = "<button class='btn btn-primary' onclick=buttonClicked("+tweet.likes+")"+
+         ">" + tweet.likes + "Likes" +"</button>";
+        return newbutton;
+    }
+
+    /* These Functions here are for formating */
+    function formatedTweet(tweet) {
+        var currenttweet = "<p>" + tweet.id + "</p>" + "<p>" + tweet.content + "</p>" + createButton(tweet);
+        return currenttweet;
+    }
+
+    const xhr = new XMLHttpRequest(); // This is declaring a new class.
+    const method = 'GET'; //POST The method used.
+    const url = '/tweets'; // On which URL.
+    const responseType = 'json'; // What is the response type.
+
+    // Initializing the object.
+    xhr.responseType = responseType;
+    xhr.open(method, url)
+    var finalTweet = "";
+    // Onload of the doc. Perform this action.
+    xhr.onload = function() {
+        const serverResponse = xhr.response
+        const tweet_list = serverResponse.response // Array.
+        var i;
+        for(i=0;i<tweet_list.length; i++){
+            finalTweet += "<div class='col-12 mx-auto col-md-10 border rounded mb-4 py-3'>" + formatedTweet(tweet_list[i]) + "</div>";
+        }
+        container.innerHTML = finalTweet ;
+    }
+
+    // Finally this is for running.
+    xhr.send()
+
+</script>
+
+{% endblock %}
