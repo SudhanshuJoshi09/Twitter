@@ -9,7 +9,7 @@
 
 <div class="row mb-3">
     <div class="col-md-4 mx-auto col-10">
-        <form method="POST" action="/create-tweet" class="form"> 
+        <form method="POST" action="/create-tweet" class="form" id='tweet-create-form'> 
             {% csrf_token %}
             <input type="hidden" name="next" value="/">
             <textarea name="content" placeholder="Your Tweet" class="form-control"></textarea>
@@ -23,45 +23,83 @@
 </div>
 
 <script>
-    /* The Like button */
+//------------------------------------------------------------------------------------------------------------
+    // Formating Tweets.
+    function formatedTweet(tweet) {
+        var currenttweet = "<div class='border rounded col-12 col-md-10 py-3 mb-4 tweet mx-auto'><p>" +
+        tweet.id + "</p>" + "<p>" + tweet.content + "</p>" + createButton(tweet) + "</div>";
+        return currenttweet;
+    }
+
+//------------------------------------------------------------------------------------------------------------
+    // Submit Tweet EventHandler.
+    function handleTweetCreateFormDidSubmit(event) {
+        event.preventDefault();
+        const myForm = event.target
+        const myFormData = new FormData(myForm)
+        const url = myForm.getAttribute("action")
+        const method = myForm.getAttribute("method")
+
+        /* Creating XMLHttpRequest() */
+        const xhr = new XMLHttpRequest()
+        xhr.open(method, url)
+        /* Ajax setting up */
+        /* setting up headers for django to find this ajax request */
+        xhr.setRequestHeader("HTTP_X_REQUESTED_WTIH", "XMLHttpRequest");
+        xhr.setRequestHeader("X-Requested-with", "XMLHttpRequest");
+
+        xhr.onload = function() {
+            if (xhr.status === 201) {
+                const newResponse = xhr.response;
+                const jsonResponse = JSON.parse(newResponse)
+                const newTweetElement = formatedTweet(jsonResponse);
+                console.log(newTweetElement);
+            }
+        }
+        xhr.send(myFormData);
+    }
+    const tweetCreateFormEl = document.getElementById('tweet-create-form')
+    tweetCreateFormEl.addEventListener("submit", handleTweetCreateFormDidSubmit)
+
+//------------------------------------------------------------------------------------------------------------
+    // For TweetContainer
+    const tweetContainerElement = document.getElementById('container');
+    function loadTweets(tweetElement) {
+        const xhr = new XMLHttpRequest(); // This is declaring a new class.
+        const method = 'GET'; //POST The method used.
+        const url = '/tweets'; // On which URL.
+        const responseType = 'json'; // What is the response type.
+
+        // Initializing the object.
+        xhr.responseType = responseType;
+        xhr.open(method, url)
+        var finalTweet = "";
+        // Onload of the doc. Perform this action.
+        xhr.onload = function() {
+            const serverResponse = xhr.response
+            const tweet_list = serverResponse.response // Array.
+            var i;
+            for(i=0; i<tweet_list.length; i++){
+                finalTweet += formatedTweet(tweet_list[i]);
+            }
+            tweetElement.innerHTML = finalTweet ;
+        }
+        xhr.send()
+    }
+    // Calling funtion for creating the TweetContainer.
+    loadTweets(tweetContainerElement);
+
+//------------------------------------------------------------------------------------------------------------
+    // Like Button
     function buttonClicked(likes) {
         console.log(likes);
     }
     function createButton(tweet) {
-        var newbutton = "<button class='btn btn-primary' onclick=buttonClicked("+tweet.likes+")"+
+        var newbutton = "<button class='btn btn-primary' onclick=buttonClicked(tweet.likes)"+
          ">" + tweet.likes + "Likes" +"</button>";
         return newbutton;
     }
-
-    /* These Functions here are for formating */
-    function formatedTweet(tweet) {
-        var currenttweet = "<p>" + tweet.id + "</p>" + "<p>" + tweet.content + "</p>" + createButton(tweet);
-        return currenttweet;
-    }
-
-    const xhr = new XMLHttpRequest(); // This is declaring a new class.
-    const method = 'GET'; //POST The method used.
-    const url = '/tweets'; // On which URL.
-    const responseType = 'json'; // What is the response type.
-
-    // Initializing the object.
-    xhr.responseType = responseType;
-    xhr.open(method, url)
-    var finalTweet = "";
-    // Onload of the doc. Perform this action.
-    xhr.onload = function() {
-        const serverResponse = xhr.response
-        const tweet_list = serverResponse.response // Array.
-        var i;
-        for(i=0;i<tweet_list.length; i++){
-            finalTweet += "<div class='col-12 mx-auto col-md-10 border rounded mb-4 py-3'>" + formatedTweet(tweet_list[i]) + "</div>";
-        }
-        container.innerHTML = finalTweet ;
-    }
-
-    // Finally this is for running.
-    xhr.send()
+//------------------------------------------------------------------------------------------------------------
 
 </script>
-
 {% endblock %}
