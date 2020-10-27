@@ -17,8 +17,9 @@ class Tweet(models.Model):
     class Meta:
         ordering = ['-id']
 
-    """ For getting serialized json format of the model. """
     def serialize(self):
+        """ Setializes the data. """
+
         return {
             "id": self.id,
             "content": self.content,
